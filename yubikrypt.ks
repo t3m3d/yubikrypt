@@ -37,6 +37,10 @@ func have(name) {
     if _chomp(exec("command -v " + _q(name) + " 2>/dev/null")) == "" { emit 0 }
     emit 1
 }
+func isLinux() {
+    if sh("uname -s") == "Linux" { emit 1 }
+    emit 0
+}
 
 // -- ANSI ------------------------------------------------------------------
 func _e() { emit fromCharCode(27) + "[" }
@@ -52,12 +56,21 @@ func clearScreen() { kp(_e() + "2J" + _e() + "H") }
 // -- YubiKey detection (ioreg - works with no extra tools) ------------------
 // count of YubiKey USB devices currently attached.
 func ykCount() {
+    if isLinux() == 1 {
+        // Yubico USB vendor id = 1050; lsusb: "... ID 1050:xxxx Yubico.com YubiKey ..."
+        let c = sh("lsusb 2>/dev/null | grep -ic 'yubico'")
+        if c == "" { emit 0 }
+        emit toInt(c)
+    }
     let c = sh("ioreg -p IOUSB 2>/dev/null | grep -i 'yubikey' | grep -c 'IOUSBHostDevice'")
     if c == "" { emit 0 }
     emit toInt(c)
 }
 // product/model string, e.g. "YubiKey OTP+FIDO+CCID".
 func ykModel() {
+    if isLinux() == 1 {
+        emit sh("lsusb 2>/dev/null | grep -i yubico | head -1 | grep -oi 'yubikey.*'")
+    }
     emit sh("ioreg -p IOUSB 2>/dev/null | grep -i 'yubikey' | grep 'IOUSBHostDevice' | head -1 | sed 's/.*+-o //; s/@.*//'")
 }
 // pretty interface list derived from the model name.
@@ -118,7 +131,12 @@ func ykInfoBlock() {
 func renderCodes(ymPresent, infoBlock, codes, rem) {
     if ymPresent == 0 {
         kp("")
-        kp("  " + yellow("OATH codes need ykman.") + gray("  install:  ") + bold("brew install ykman"))
+        if isLinux() == 1 {
+            kp("  " + yellow("OATH codes need ykman.") + gray("  install:  ")
+               + bold("sudo pacman -S yubikey-manager") + gray("  (or pipx install yubikey-manager)"))
+        } else {
+            kp("  " + yellow("OATH codes need ykman.") + gray("  install:  ") + bold("brew install ykman"))
+        }
         emit ""
     }
     if infoBlock != "" { kp(infoBlock) }
