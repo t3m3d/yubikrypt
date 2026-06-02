@@ -17,15 +17,55 @@ Plug a key in, leave it, and watch a live dashboard of your TOTP codes.
 No secrets are stored or transmitted — it only reads what the key (and `ykman`)
 report.
 
-## Build
+## Install
 
-Needs Krypton installed (provides `kcc.sh` / `kr`). The build script is itself
-KryptScript. From this folder:
+### 1. Prerequisites
+
+- **macOS** (Apple Silicon / arm64). Linux is a small change away — see *How it
+  works*.
+- **Krypton** — the compiler/runtime that provides `kcc.sh` and `kr`. Get it
+  from [krypton-lang.org](https://krypton-lang.org) (or build from the
+  [krypton repo](https://github.com/t3m3d/krypton): `./install.sh`). Make sure
+  `kcc.sh` / `kr` are on your `PATH`:
+
+  ```sh
+  kcc.sh --version    # should print a version
+  ```
+
+- **ykman** *(optional — needed only for OATH/TOTP codes)*:
+
+  ```sh
+  brew install ykman
+  ```
+
+### 2. Get yubiKrypt
+
+```sh
+git clone https://github.com/t3m3d/yubikrypt.git
+cd yubikrypt
+```
+
+### 3. Build
+
+The build script is itself KryptScript (no bash build step):
 
 ```sh
 kr build.ks
 # or compile directly:
 kcc.sh yubikrypt.ks -o yubikrypt
+```
+
+This produces the `./yubikrypt` binary (gitignored — you build it locally).
+
+> **Note:** if you have both a packaged Krypton (`/usr/local/krypton`) and a
+> dev checkout, build with the dev repo's compiler — a stale install can
+> miscompile (silent crash at runtime). `build.ks` prefers the dev repo
+> automatically; override with `KCC=/path/to/kcc.sh kr build.ks`.
+
+### 4. (Optional) put it on your PATH
+
+```sh
+sudo ln -sf "$PWD/yubikrypt" /usr/local/bin/yubikrypt
 ```
 
 ## Run
