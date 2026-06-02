@@ -1,0 +1,3 @@
+# build artifact (run ./build.sh to produce it)
+yubikrypt
+*.kir
