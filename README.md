@@ -19,11 +19,12 @@ report.
 
 ## Build
 
-Needs Krypton installed (provides `kcc.sh`). From this folder:
+Needs Krypton installed (provides `kcc.sh` / `kr`). The build script is itself
+KryptScript. From this folder:
 
 ```sh
-./build.sh
-# or directly:
+kr build.ks
+# or compile directly:
 kcc.sh yubikrypt.ks -o yubikrypt
 ```
 
